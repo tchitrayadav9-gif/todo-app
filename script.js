@@ -70,33 +70,13 @@ const PRIORITY_VALUES = { 'High': 3, 'Medium': 2, 'Low': 1 };
 const DEFAULT_TASKS = [
   {
     id: "sample-1",
-    title: "Welcome to Smart To-Do! 🚀",
-    description: "Try creating, editing, or deleting tasks. Use categories and priorities to organize them.",
-    dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0], // tomorrow
-    priority: "High",
+    title: "Welcome to the App",
+    description: "Organize your tasks, check items, drag to reorder, and toggle dark mode.",
+    dueDate: new Date().toISOString().split('T')[0], // present date
+    priority: "Medium",
     category: "Personal",
     completed: false,
     position: 0
-  },
-  {
-    id: "sample-2",
-    title: "Explore Dark Mode 🌙",
-    description: "Click the moon icon in the top right to switch themes seamlessly.",
-    dueDate: "",
-    priority: "Medium",
-    category: "Work",
-    completed: false,
-    position: 1
-  },
-  {
-    id: "sample-3",
-    title: "Try Drag & Drop 🎯",
-    description: "Hold and drag a task card to reorder your checklist visually.",
-    dueDate: "",
-    priority: "Low",
-    category: "Study",
-    completed: true,
-    position: 2
   }
 ];
 
@@ -135,6 +115,24 @@ function loadTasksFromStorage() {
   if (storedTasks) {
     try {
       state.tasks = JSON.parse(storedTasks);
+      
+      // Clean up previous default tasks if they exist
+      const hasOldWelcome = state.tasks.some(t => t.id === 'sample-1' && t.title.includes('Welcome to Smart To-Do'));
+      const hasOldSample2 = state.tasks.some(t => t.id === 'sample-2');
+      const hasOldSample3 = state.tasks.some(t => t.id === 'sample-3');
+      
+      if (hasOldWelcome || hasOldSample2 || hasOldSample3) {
+        // Keep only non-sample tasks, and prepend the new welcome task
+        state.tasks = [
+          ...DEFAULT_TASKS,
+          ...state.tasks.filter(t => !t.id.startsWith('sample-'))
+        ];
+        // Re-assign positions
+        state.tasks.forEach((t, idx) => {
+          t.position = idx;
+        });
+        saveTasksToStorage();
+      }
     } catch (e) {
       console.error("Error parsing tasks from local storage", e);
       state.tasks = DEFAULT_TASKS;
